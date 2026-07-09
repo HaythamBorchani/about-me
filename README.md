@@ -1,29 +1,30 @@
-# Virtual Twin — web front-end
+# Haytham Borchani — About Me
 
-A static landing page that lets recruiters chat with **Haytham Borchani's virtual
-twin**, a [Rasa](https://rasa.com)-powered assistant. The page embeds the
-[rasa-webchat](https://github.com/botfront/rasa-webchat) widget and talks to a
-Rasa server over the **Socket.IO** channel.
-
-This repo contains **only the front-end**. The Rasa assistant (NLU data, domain,
-flows, custom actions) lives in a separate private repository.
+A personal "About Me" page for **Haytham Borchani** — Applied AI Engineer at
+BNP Paribas, ENSTA Paris. It presents a short bio, experience, skills, education
+and contact links, and embeds a small chat assistant so visitors can ask
+questions directly.
 
 ## Live page
 
 Published with **GitHub Pages** from this repo's `main` branch.
 
-## Configuration
+## Chat assistant (optional)
 
-The widget connects to the Rasa server defined at the top of `index.html`:
+The page embeds a chat widget that connects to an assistant server over the
+**Socket.IO** channel. The server URL is defined at the top of `index.html`:
 
 ```js
-window.RASA_SERVER_URL = "http://localhost:5005";
+window.CHAT_SERVER_URL = "http://localhost:5005";
 ```
 
-> GitHub Pages serves static files only — it cannot run Rasa. The chat will only
-> respond once `RASA_SERVER_URL` points at a Rasa server that is reachable from
-> the public internet (a hosted server, or a tunnel such as `ngrok` for demos).
-> `localhost:5005` works only on your own machine.
+> GitHub Pages serves static files only — it cannot run the assistant server.
+> The chat will only respond once `CHAT_SERVER_URL` points at a server that is
+> reachable from the public internet (a hosted server, or a tunnel such as
+> `ngrok` for demos). `localhost:5005` works only on your own machine.
+
+The rest of the page works with no server — the bio, experience, skills and
+contact links are fully static.
 
 ## Run locally
 
@@ -31,4 +32,4 @@ window.RASA_SERVER_URL = "http://localhost:5005";
 python -m http.server 8000
 ```
 
-Then open <http://localhost:8000> (with a Rasa server running on port 5005).
+Then open <http://localhost:8000>.

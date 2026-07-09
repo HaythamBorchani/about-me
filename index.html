@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Haytham Borchani — Virtual Twin</title>
-  <meta name="description" content="Chat with Haytham Borchani's virtual twin — a Rasa-powered assistant that answers recruiters' questions and helps schedule an interview." />
+  <title>Haytham Borchani — About Me</title>
+  <meta name="description" content="Haytham Borchani — Applied AI Engineer at BNP Paribas, ENSTA Paris. Background, experience, skills and how to get in touch." />
 
-  <!-- ==== Config: where the Rasa server lives ==== -->
-  <!-- For local testing this is localhost:5005. For production, change to your hosted Rasa server URL. -->
+  <!-- ==== Config: where the chat assistant's server lives ==== -->
+  <!-- For local testing this is localhost:5005. For production, change to your hosted server URL. -->
   <script>
-    window.RASA_SERVER_URL = "http://localhost:5005";
+    window.CHAT_SERVER_URL = "http://localhost:5005";
   </script>
 
   <style>
@@ -47,6 +47,8 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       -webkit-font-smoothing: antialiased;
     }
+
+    a { color: inherit; }
 
     .bg-glow {
       position: fixed;
@@ -91,7 +93,7 @@
     h1 {
       font-size: clamp(2.2rem, 6vw, 3.6rem);
       line-height: 1.05;
-      margin: 1.5rem 0 0.75rem;
+      margin: 1.5rem 0 0.5rem;
       letter-spacing: -0.02em;
     }
 
@@ -102,12 +104,25 @@
       -webkit-text-fill-color: transparent;
     }
 
-    .lede {
-      font-size: clamp(1.05rem, 2.5vw, 1.25rem);
+    .headline {
+      font-size: clamp(1.05rem, 2.5vw, 1.3rem);
+      font-weight: 600;
+      color: var(--text);
+      margin: 0 0 0.4rem;
+    }
+
+    .meta {
       color: var(--muted);
-      max-width: 42ch;
+      font-size: 0.95rem;
+      margin: 0 0 1.5rem;
+    }
+
+    .lede {
+      font-size: clamp(1.05rem, 2.5vw, 1.2rem);
+      color: var(--muted);
+      max-width: 60ch;
       margin: 0 0 2rem;
-      line-height: 1.6;
+      line-height: 1.65;
     }
 
     .cta-row {
@@ -119,11 +134,15 @@
 
     .btn {
       appearance: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
       border: 1px solid var(--border);
       background: var(--card);
       color: var(--text);
       font-size: 0.95rem;
       font-weight: 600;
+      text-decoration: none;
       padding: 0.8rem 1.3rem;
       border-radius: 12px;
       cursor: pointer;
@@ -138,49 +157,72 @@
       box-shadow: 0 8px 24px rgba(108, 92, 231, 0.35);
     }
 
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
+    section.block { margin-bottom: 3.5rem; }
+
+    h2 {
+      font-size: 1.4rem;
+      letter-spacing: -0.01em;
+      margin: 0 0 1.25rem;
     }
 
-    .card {
+    .about p {
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.7;
+      max-width: 65ch;
+      margin: 0 0 1rem;
+    }
+
+    /* Timeline */
+    .timeline { display: grid; gap: 1rem; }
+
+    .item {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 16px;
       padding: 1.25rem 1.35rem;
     }
-
-    .card h3 {
-      margin: 0 0 0.4rem;
-      font-size: 1rem;
+    .item .row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 0.25rem 1rem;
+      align-items: baseline;
     }
+    .item h3 { margin: 0; font-size: 1.05rem; }
+    .item .org { color: var(--accent-2); font-weight: 600; }
+    .item .when { color: var(--muted); font-size: 0.85rem; white-space: nowrap; }
+    .item .where { color: var(--muted); font-size: 0.85rem; margin: 0.15rem 0 0; }
+    .item p.desc { color: var(--muted); font-size: 0.92rem; line-height: 1.55; margin: 0.6rem 0 0; }
 
-    .card p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 0.9rem;
-      line-height: 1.5;
-    }
-
-    .hint {
-      margin-top: 3rem;
-      font-size: 0.85rem;
-      color: var(--muted);
-    }
-    .hint code {
-      background: var(--bg-soft);
-      padding: 0.15rem 0.4rem;
-      border-radius: 6px;
+    /* Skills */
+    .skill-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+    .skill-group {
+      background: var(--card);
       border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.1rem 1.25rem;
     }
+    .skill-group h3 { margin: 0 0 0.75rem; font-size: 0.95rem; }
+    .chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .chip {
+      font-size: 0.8rem;
+      color: var(--text);
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      padding: 0.3rem 0.65rem;
+      border-radius: 999px;
+    }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 640px) { .two-col { grid-template-columns: 1fr; } }
 
     footer {
       position: relative;
       z-index: 1;
       text-align: center;
       color: var(--muted);
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       padding: 2rem 1rem 3rem;
     }
     footer a { color: var(--accent-2); text-decoration: none; }
@@ -190,56 +232,203 @@
   <div class="bg-glow"></div>
 
   <main class="wrap">
-    <span class="badge"><span class="dot"></span> Powered by Rasa · virtual twin</span>
+    <span class="badge"><span class="dot"></span> Available to connect</span>
 
-    <h1>Meet <span class="grad">Haytham's<br />virtual twin</span></h1>
+    <h1>Hi, I'm <span class="grad">Haytham Borchani</span></h1>
+    <p class="headline">Applied AI Engineer @ BNP Paribas · ENSTA Paris</p>
+    <p class="meta">📍 Paris, Île-de-France, France</p>
 
     <p class="lede">
-      A conversational assistant that answers recruiters' questions about my
-      background, skills, experience and projects — and helps you book time to talk.
+      I build applied AI systems — with a focus on natural language processing,
+      large language models, retrieval-augmented generation (RAG) and autonomous
+      agents. I turn research ideas into products that work in production.
     </p>
 
     <div class="cta-row">
-      <button class="btn primary" onclick="openChat()">💬 Start chatting</button>
-      <button class="btn" onclick="openChat('Who is Haytham?')">Who is Haytham?</button>
-      <button class="btn" onclick="openChat('What are your skills?')">What can he do?</button>
+      <button class="btn primary" onclick="openChat()">💬 Chat with me</button>
+      <a class="btn" href="mailto:borchani.haytham@gmail.com">✉️ Email</a>
+      <a class="btn" href="https://www.linkedin.com/in/haytham-borchani-0995521ba/" target="_blank" rel="noopener">in LinkedIn</a>
     </div>
 
-    <section class="cards">
-      <div class="card">
-        <h3>🧠 About me</h3>
-        <p>Ask who I am and what drives me. Get a quick, honest intro.</p>
-      </div>
-      <div class="card">
-        <h3>🛠️ Skills &amp; stack</h3>
-        <p>Languages, tools and frameworks I work with day to day.</p>
-      </div>
-      <div class="card">
-        <h3>📈 Experience</h3>
-        <p>Where I've worked and the kind of problems I've solved.</p>
-      </div>
-      <div class="card">
-        <h3>📅 Let's talk</h3>
-        <p>Ready to chat? Ask to schedule an interview and I'll share a link.</p>
+    <!-- About -->
+    <section class="block about">
+      <h2>About me</h2>
+      <p>
+        I'm an Applied AI Engineer at BNP Paribas Cardif, working within the NLP
+        team of Corporate Analytics on conversational RAG systems and agentic
+        approaches. I studied Applied Mathematics, Optimization and Data Science
+        at ENSTA Paris and earned an M2 in Data Science at Institut Polytechnique
+        de Paris.
+      </p>
+      <p>
+        Over the past few years I've worked across research and industry — from a
+        machine-learning research group to consulting and financial services —
+        building and deploying models for real-world problems. I enjoy the whole
+        path: framing the problem, experimenting with the latest methods, and
+        shipping something reliable.
+      </p>
+    </section>
+
+    <!-- Experience -->
+    <section class="block">
+      <h2>Experience</h2>
+      <div class="timeline">
+        <div class="item">
+          <div class="row">
+            <h3>Applied AI Engineer</h3>
+            <span class="when">Feb 2025 — Present</span>
+          </div>
+          <span class="org">BNP Paribas Cardif</span>
+          <p class="where">Nanterre, France · Hybrid · NLP — Corporate Analytics</p>
+          <p class="desc">Building conversational RAG systems and agent-based solutions — retrieval-augmented generation, multi-agent systems and LLM applications.</p>
+        </div>
+
+        <div class="item">
+          <div class="row">
+            <h3>Data Scientist — End-of-studies Internship</h3>
+            <span class="when">Apr 2024 — Oct 2024</span>
+          </div>
+          <span class="org">BNP Paribas Cardif</span>
+          <p class="where">Nanterre, France · NLP — Corporate Analytics</p>
+          <p class="desc">Research and development around large language models within the Corporate Analytics DataLab.</p>
+        </div>
+
+        <div class="item">
+          <div class="row">
+            <h3>Data Scientist — Gap-Year Internship</h3>
+            <span class="when">Mar 2023 — Aug 2023</span>
+          </div>
+          <span class="org">BNP Paribas</span>
+          <p class="where">Paris, France · Compliance Group — Technology &amp; Innovation</p>
+          <p class="desc">Research and development on Graph Neural Networks for compliance use cases.</p>
+        </div>
+
+        <div class="item">
+          <div class="row">
+            <h3>Consultant Data Scientist — Gap-Year Internship</h3>
+            <span class="when">Sep 2022 — Feb 2023</span>
+          </div>
+          <span class="org">Wavestone</span>
+          <p class="where">Paris, France · Digital Customer Practice — ML &amp; DataLab</p>
+          <p class="desc">Machine-learning consulting and model deployment for the MLDL asset.</p>
+        </div>
+
+        <div class="item">
+          <div class="row">
+            <h3>Research Intern</h3>
+            <span class="when">Jun 2022 — Aug 2022</span>
+          </div>
+          <span class="org">Centre Borelli</span>
+          <p class="where">Paris, France · Machine Learning &amp; Massive Data Analysis (MLMDA)</p>
+          <p class="desc">Research on machine-learning methods within the MLMDA research group.</p>
+        </div>
       </div>
     </section>
 
-    <p class="hint">
-      Tip: click the chat bubble in the bottom-right corner. If it doesn't respond,
-      make sure the Rasa server is running at <code id="server-url">localhost:5005</code>.
-    </p>
+    <!-- Skills -->
+    <section class="block">
+      <h2>Skills</h2>
+      <div class="skill-groups">
+        <div class="skill-group">
+          <h3>AI &amp; Machine Learning</h3>
+          <div class="chips">
+            <span class="chip">LLMs</span>
+            <span class="chip">RAG</span>
+            <span class="chip">Agents &amp; multi-agent systems</span>
+            <span class="chip">NLP</span>
+            <span class="chip">Deep Learning</span>
+            <span class="chip">Graph Neural Networks</span>
+            <span class="chip">Machine Learning</span>
+          </div>
+        </div>
+        <div class="skill-group">
+          <h3>Engineering &amp; Tools</h3>
+          <div class="chips">
+            <span class="chip">Python</span>
+            <span class="chip">PyTorch</span>
+            <span class="chip">LangChain</span>
+            <span class="chip">Model Deployment</span>
+            <span class="chip">R&amp;D</span>
+          </div>
+        </div>
+        <div class="skill-group">
+          <h3>Foundations</h3>
+          <div class="chips">
+            <span class="chip">Applied Mathematics</span>
+            <span class="chip">Optimization</span>
+            <span class="chip">Statistics &amp; Probability</span>
+            <span class="chip">Data Science</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Education & Languages -->
+    <section class="block">
+      <div class="two-col">
+        <div>
+          <h2>Education</h2>
+          <div class="timeline">
+            <div class="item">
+              <div class="row">
+                <h3>Engineer's Degree</h3>
+                <span class="when">2020 — 2024</span>
+              </div>
+              <span class="org">ENSTA Paris</span>
+              <p class="where">Applied Mathematics, Optimization &amp; Data Science</p>
+            </div>
+            <div class="item">
+              <div class="row">
+                <h3>Master's Degree (M2)</h3>
+                <span class="when">2023 — 2024</span>
+              </div>
+              <span class="org">Institut Polytechnique de Paris</span>
+              <p class="where">Data Science</p>
+            </div>
+          </div>
+        </div>
+        <div>
+          <h2>Languages</h2>
+          <div class="skill-group">
+            <div class="chips">
+              <span class="chip">Arabic — Native</span>
+              <span class="chip">French — Full professional</span>
+              <span class="chip">English — Professional</span>
+              <span class="chip">German — Elementary</span>
+            </div>
+          </div>
+          <h2 style="margin-top:2rem;">Highlights</h2>
+          <div class="skill-group">
+            <div class="chips">
+              <span class="chip">Agentic AI — DeepLearning.AI</span>
+              <span class="chip">Excellence Scholarship</span>
+              <span class="chip">18+ certifications</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block about">
+      <h2>Let's talk</h2>
+      <p>
+        Want to know more about my background, skills or projects? Use the chat
+        bubble in the bottom-right corner, or reach me directly by
+        <a href="mailto:borchani.haytham@gmail.com" style="color:var(--accent-2);text-decoration:none;">email</a>.
+      </p>
+    </section>
   </main>
 
   <footer>
-    Built with <a href="https://rasa.com" target="_blank" rel="noopener">Rasa</a> ·
-    <a href="mailto:borchani.haytham@gmail.com">borchani.haytham@gmail.com</a>
+    © <span id="year"></span> Haytham Borchani ·
+    <a href="mailto:borchani.haytham@gmail.com">borchani.haytham@gmail.com</a> ·
+    <a href="https://www.linkedin.com/in/haytham-borchani-0995521ba/" target="_blank" rel="noopener">LinkedIn</a>
   </footer>
 
-  <!-- ==== Rasa Webchat widget (Socket.IO channel) ==== -->
+  <!-- ==== Chat assistant widget (Socket.IO channel) ==== -->
   <div id="webchat"></div>
   <script>
-    document.getElementById("server-url").textContent =
-      window.RASA_SERVER_URL.replace(/^https?:\/\//, "");
+    document.getElementById("year").textContent = new Date().getFullYear();
   </script>
   <script src="https://cdn.jsdelivr.net/npm/rasa-webchat@1.0.1/lib/index.min.js"></script>
   <script>
@@ -249,15 +438,15 @@
           setTimeout(initWebchat, 100);
           return;
         }
-        // NOTE: this rasa-webchat build exposes `WebChat.default` as a
+        // NOTE: this webchat build exposes `WebChat.default` as a
         // callable — WebChat.default(config, elementId) — not `.init(...)`.
         window.WebChat.default(
           {
-            socketUrl: window.RASA_SERVER_URL,
+            socketUrl: window.CHAT_SERVER_URL,
             socketPath: "/socket.io/",
             customData: { language: "en" },
-            title: "Haytham's Virtual Twin",
-            subtitle: "Ask me anything · powered by Rasa",
+            title: "Chat with Haytham",
+            subtitle: "Ask me anything about my work",
             initPayload: "/greet",
             inputTextFieldHint: "Type a message…",
             showFullScreenButton: false,
@@ -298,7 +487,7 @@
         return true;
       }
 
-      // Landing-page buttons: open the chat, then (optionally) ask a question.
+      // Page buttons: open the chat, then (optionally) ask a question.
       window.openChat = function (question) {
         openWidget();
         if (!question) return;
