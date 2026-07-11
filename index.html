@@ -255,7 +255,7 @@
     </p>
 
     <div class="cta-row">
-      <button class="btn primary" onclick="openChat()">💬 Chat with me</button>
+      <button class="btn primary" onclick="openChat()">💬 Chat with Haytham's Agent</button>
       <a class="btn" href="mailto:borchani.haytham@gmail.com">✉️ Email</a>
       <a class="btn" href="https://www.linkedin.com/in/haytham-borchani-0995521ba/" target="_blank" rel="noopener">in LinkedIn</a>
     </div>
@@ -437,7 +437,7 @@
 
   <!-- ==== Official Rasa Chat Widget (Socket.IO channel) ==== -->
   <rasa-chatbot-widget
-    widget-title="Chat with Haytham"
+    widget-title="'Chat with Haytham's Agent"
     input-message-placeholder="Type a message…"
     initial-payload="/greet"
     bot-icon="https://api.dicebear.com/9.x/bottts/svg?seed=Haytham"
@@ -455,10 +455,13 @@
       if (widget) widget.setAttribute("server-url", window.CHAT_SERVER_URL);
 
       // Page buttons: open the chat. The official widget exposes no public
-      // open() method, so we click its launcher button inside the shadow DOM.
+      // open() method, so we click its launcher (a <div role="button"> with the
+      // class below) inside the shadow DOM.
       window.openChat = function () {
         if (!widget || !widget.shadowRoot) return;
-        var launcher = widget.shadowRoot.querySelector("button");
+        var launcher = widget.shadowRoot.querySelector(
+          ".rasa-chatbot-widget__launcher"
+        );
         if (launcher) launcher.click();
       };
     })();
