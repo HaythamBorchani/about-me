@@ -12,6 +12,16 @@
     window.CHAT_SERVER_URL = "https://personal-assistant-2gnhi3sm3q-ew.a.run.app";
   </script>
 
+  <!-- ==== Official Rasa Chat Widget (assets) ==== -->
+  <script
+    type="module"
+    src="https://unpkg.com/@rasahq/chat-widget-ui/dist/rasa-chatwidget/rasa-chatwidget.esm.js"
+  ></script>
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/@rasahq/chat-widget-ui/dist/rasa-chatwidget/rasa-chatwidget.css"
+  />
+
   <style>
     :root {
       --bg: #0f1020;
@@ -425,77 +435,31 @@
     <a href="https://www.linkedin.com/in/haytham-borchani-0995521ba/" target="_blank" rel="noopener">LinkedIn</a>
   </footer>
 
-  <!-- ==== Chat assistant widget (Socket.IO channel) ==== -->
-  <div id="webchat"></div>
+  <!-- ==== Official Rasa Chat Widget (Socket.IO channel) ==== -->
+  <rasa-chatbot-widget
+    widget-title="Chat with Haytham"
+    input-message-placeholder="Type a message…"
+    initial-payload="/greet"
+    bot-icon="https://api.dicebear.com/9.x/bottts/svg?seed=Haytham"
+    widget-icon="https://api.dicebear.com/9.x/bottts/svg?seed=Haytham"
+    toggle-full-screen
+  ></rasa-chatbot-widget>
+
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
-  </script>
-  <script src="https://cdn.jsdelivr.net/npm/rasa-webchat@1.0.1/lib/index.min.js"></script>
-  <script>
+
     (function () {
-      function initWebchat() {
-        if (!window.WebChat || !document.getElementById("webchat")) {
-          setTimeout(initWebchat, 100);
-          return;
-        }
-        // NOTE: this webchat build exposes `WebChat.default` as a
-        // callable — WebChat.default(config, elementId) — not `.init(...)`.
-        window.WebChat.default(
-          {
-            socketUrl: window.CHAT_SERVER_URL,
-            socketPath: "/socket.io/",
-            customData: { language: "en" },
-            title: "Chat with Haytham",
-            subtitle: "Ask me anything about my work",
-            initPayload: "/greet",
-            inputTextFieldHint: "Type a message…",
-            showFullScreenButton: true,
-            params: {
-              storage: "session",
-              images: { dims: { width: 300, height: 200 } }
-            },
-            profileAvatar: "https://api.dicebear.com/9.x/bottts/svg?seed=Haytham"
-          },
-          null
-        );
-      }
-      initWebchat();
+      // Point the widget at the backend defined in CHAT_SERVER_URL
+      // (kept as a single source of truth so it's easy to switch to localhost).
+      var widget = document.querySelector("rasa-chatbot-widget");
+      if (widget) widget.setAttribute("server-url", window.CHAT_SERVER_URL);
 
-      // Open the widget by clicking its launcher (no public open() API in this build).
-      function openWidget() {
-        var container = document.querySelector(".rw-widget-container");
-        var isOpen = container && container.classList.contains("rw-chat-open");
-        if (!isOpen) {
-          var launcher = document.querySelector(".rw-launcher");
-          if (launcher) launcher.click();
-        }
-      }
-
-      // Type a message into the widget's own input and submit it.
-      function sendMessage(text) {
-        var el = document.querySelector(".rw-new-message");
-        var send = document.querySelector(".rw-send");
-        if (!el || !send) return false;
-        var proto =
-          el.tagName === "TEXTAREA"
-            ? window.HTMLTextAreaElement.prototype
-            : window.HTMLInputElement.prototype;
-        var setter = Object.getOwnPropertyDescriptor(proto, "value").set;
-        setter.call(el, text);
-        el.dispatchEvent(new Event("input", { bubbles: true }));
-        send.click();
-        return true;
-      }
-
-      // Page buttons: open the chat, then (optionally) ask a question.
-      window.openChat = function (question) {
-        openWidget();
-        if (!question) return;
-        var tries = 0;
-        (function trySend() {
-          if (sendMessage(question) || tries++ > 30) return;
-          setTimeout(trySend, 100);
-        })();
+      // Page buttons: open the chat. The official widget exposes no public
+      // open() method, so we click its launcher button inside the shadow DOM.
+      window.openChat = function () {
+        if (!widget || !widget.shadowRoot) return;
+        var launcher = widget.shadowRoot.querySelector("button");
+        if (launcher) launcher.click();
       };
     })();
   </script>
