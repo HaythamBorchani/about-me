@@ -286,6 +286,12 @@
     .rfp .email { font-family: var(--font-mono); font-size: 17px; overflow-wrap: anywhere; color: #141815; }
     .rfp .btn { border-color: #141815; background: #141815; color: #EDF0EC; }
     .rfp .btn:hover { box-shadow: 2px 2px 0 #EDF0EC; }
+    .colophon { padding-block: 0; }
+    .footer-links a { color: var(--ink); }
+    .footer-links a:hover { color: var(--accent-ink); }
+    .colo { border: 2px dashed var(--ink); padding: clamp(20px, 3vw, 32px); display: flex; flex-direction: column; gap: 12px; }
+    .colo .formula { margin: 0; font-family: var(--font-mono); font-weight: 500; font-size: clamp(22px, 4vw, 40px); line-height: 1.2; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+    .colo-text { margin: 0; max-width: 70ch; font-size: 15px; color: var(--ink-2); }
     footer { padding-block: 28px 48px; font-family: var(--font-mono); font-size: 12px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; }
   </style>
 </head>
@@ -473,22 +479,20 @@
       </div>
     </section>
 
-    <!-- ================= Contact (D) ================= -->
-    <section id="contact" class="wrap">
-      <div class="rfp">
-        <div>
-          <span class="mono" style="font-size:12px;letter-spacing:0.08em">REQUEST FOR PROPOSAL</span>
-          <h2>Have a system to build?</h2>
-          <a class="email" href="mailto:borchani.haytham@gmail.com">borchani.haytham@gmail.com</a>
-        </div>
-        <a class="btn" href="https://www.linkedin.com/in/haytham-borchani-0995521ba/" target="_blank" rel="noopener">LinkedIn</a>
+    <!-- ================= Colophon: made with AI ================= -->
+    <section class="wrap colophon" aria-labelledby="colophon-title">
+      <div class="colo">
+        <span class="eyebrow">Colophon · how this page was made</span>
+        <p class="formula" id="colophon-title">Human + AI &gt; max(AI, Human)</p>
+        <p class="colo-text">Yes, this page was made with AI. I built it together with Claude: the AI proposed layouts and wrote the code, while I chose the direction, checked every fact and rewrote what didn't sound like me. I believe the combination beats either one alone, and it's how I work every day.</p>
       </div>
     </section>
   </main>
 
-  <footer class="wrap">
+  <footer class="wrap" id="contact">
     <span>© <span id="year"></span> Haytham Borchani</span>
-    <span>Static page on GitHub Pages · twin on Cloud Run</span>
+    <span class="footer-links"><a href="mailto:borchani.haytham@gmail.com">borchani.haytham@gmail.com</a> · <a href="https://www.linkedin.com/in/haytham-borchani-0995521ba/" target="_blank" rel="noopener">LinkedIn</a></span>
+    <span>Made by a human + AI · GitHub Pages · twin on Cloud Run</span>
   </footer>
 
   <script>
