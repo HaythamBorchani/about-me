@@ -144,8 +144,9 @@
       font-family: var(--font-display);
       font-weight: 800; font-stretch: 125%;
       font-size: clamp(44px, 7.5vw, 84px);
-      line-height: 0.95; letter-spacing: -0.02em; text-transform: uppercase;
+      line-height: 0.95; letter-spacing: -0.02em;
     }
+    .tb-main h1 .family { text-transform: uppercase; }
     .tb-main .lede { margin: 0; font-size: 19px; line-height: 1.55; max-width: 54ch; color: var(--ink-2); }
     .tb-main .cta { display: flex; flex-wrap: wrap; gap: 12px; }
     .tb-side { flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column; }
@@ -313,7 +314,7 @@
     <div class="titleblock">
       <div class="tb-main">
         <span class="eyebrow" style="color:var(--muted)">Spec · Applied AI Engineer</span>
-        <h1>Haytham<br>Borchani</h1>
+        <h1>Haytham<br><span class="family">Borchani</span></h1>
         <p class="lede">I build applied AI systems: conversational RAG, LLM agents and multi-agent orchestration, taken from research idea to production. Currently in the Global AI Office at BNP Paribas Cardif.</p>
         <div class="cta">
           <a class="btn primary" href="#ask">Talk to my twin</a>
