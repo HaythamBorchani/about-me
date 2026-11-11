@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Haytham Borchani — About Me</title>
-  <meta name="description" content="Haytham Borchani — Applied AI Engineer at BNP Paribas, ENSTA Paris. Background, experience, skills and how to get in touch." />
+  <title>Haytham Borchani — Applied AI Engineer</title>
+  <meta name="description" content="Haytham Borchani — Applied AI Engineer at BNP Paribas Cardif, ENSTA Paris. Ask my digital twin about my work on LLMs, RAG and agents." />
 
   <!-- ==== Config: where the chat assistant's server lives ==== -->
   <!-- Production backend on Cloud Run. For local testing use http://localhost:5005. -->
@@ -12,458 +12,723 @@
     window.CHAT_SERVER_URL = "https://personal-assistant-2gnhi3sm3q-ew.a.run.app";
   </script>
 
-  <!-- ==== Official Rasa Chat Widget (assets) ==== -->
-  <script
-    type="module"
-    src="https://unpkg.com/@rasahq/chat-widget-ui/dist/rasa-chatwidget/rasa-chatwidget.esm.js"
-  ></script>
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/@rasahq/chat-widget-ui/dist/rasa-chatwidget/rasa-chatwidget.css"
-  />
+  <!-- Socket.IO client: talks to the Rasa socketio channel -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400;62..125,500;62..125,700;62..125,800&family=DM+Mono:wght@400;500&display=swap" />
 
   <style>
+    /* Layout: engineering-drawing sheet. Bordered title blocks, mono annotations, one orange accent. */
     :root {
-      --bg: #0f1020;
-      --bg-soft: #17182e;
-      --card: #1c1d38;
-      --text: #e8e9f3;
-      --muted: #a2a4c0;
-      --accent: #6c5ce7;
-      --accent-2: #00d2d3;
-      --border: rgba(255, 255, 255, 0.08);
+      --paper: #EDF0EC;
+      --paper-2: #F6F8F5;
+      --card: #FFFFFF;
+      --ink: #141815;
+      --ink-2: #2E3530;
+      --muted: #4A524C;
+      --line-soft: #D3D9D3;
+      --accent: #E8590C;
+      --accent-ink: #B8430A;
+      --accent-tint: #FCE3D3;
+      --band: #141815;
+      --band-text: #E9ECE8;
+      --band-muted: #A9B2AB;
+      --band-line: #2A312C;
+      --band-accent: #F58B4E;
+      --c-llm: #D2550A;
+      --c-graph: #2557C7;
+      --c-eng: #1D7A55;
+      --c-found: #6B3FB0;
+      --font-display: "Archivo", "Arial Narrow", system-ui, sans-serif;
+      --font-body: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+      --font-mono: "DM Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+      color-scheme: light;
     }
-
-    @media (prefers-color-scheme: light) {
+    @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #f6f7fb;
-        --bg-soft: #eef0f7;
-        --card: #ffffff;
-        --text: #1b1c2e;
-        --muted: #5a5c78;
-        --accent: #6c5ce7;
-        --accent-2: #0097a7;
-        --border: rgba(0, 0, 0, 0.08);
+        --paper: #121513;
+        --paper-2: #1A1E1B;
+        --card: #1E2320;
+        --ink: #E6EAE5;
+        --ink-2: #C3CAC4;
+        --muted: #98A29A;
+        --line-soft: #2E3530;
+        --accent: #F2702A;
+        --accent-ink: #F58B4E;
+        --accent-tint: #3A2416;
+        --band: #0B0D0C;
+        --band-line: #232925;
+        --c-llm: #F2702A;
+        --c-graph: #6E95F0;
+        --c-eng: #43B587;
+        --c-found: #A783E6;
+        color-scheme: dark;
       }
     }
 
     * { box-sizing: border-box; }
-
-    html, body {
+    html { scroll-behavior: smooth; }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; animation: none !important; } }
+    body {
       margin: 0;
-      padding: 0;
-      background: var(--bg);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.55;
       -webkit-font-smoothing: antialiased;
     }
-
-    a { color: inherit; }
-
-    .bg-glow {
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      background:
-        radial-gradient(600px 400px at 15% 10%, rgba(108, 92, 231, 0.25), transparent 60%),
-        radial-gradient(500px 400px at 90% 20%, rgba(0, 210, 211, 0.18), transparent 60%);
-      pointer-events: none;
-    }
+    a { color: var(--accent-ink); }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    h1, h2, h3 { text-wrap: balance; }
 
     .wrap {
-      position: relative;
-      z-index: 1;
-      max-width: 960px;
+      max-width: 1240px;
       margin: 0 auto;
-      padding: clamp(2rem, 6vw, 5rem) clamp(1.25rem, 5vw, 2rem) 6rem;
+      padding-left: max(20px, env(safe-area-inset-left, 0px));
+      padding-right: max(20px, env(safe-area-inset-right, 0px));
     }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.8rem;
-      font-weight: 600;
-      letter-spacing: 0.02em;
-      color: var(--muted);
-      background: var(--bg-soft);
-      border: 1px solid var(--border);
-      padding: 0.4rem 0.85rem;
-      border-radius: 999px;
+    .mono { font-family: var(--font-mono); }
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent-ink);
     }
-
-    .badge .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--accent-2);
-      box-shadow: 0 0 0 3px rgba(0, 210, 211, 0.2);
+    .section { padding-block: 80px; }
+    .section-head {
+      display: flex; flex-wrap: wrap; gap: 12px 32px;
+      justify-content: space-between; align-items: flex-end;
+      margin-bottom: 32px;
     }
-
-    h1 {
-      font-size: clamp(2.2rem, 6vw, 3.6rem);
+    .section-head > div { display: flex; flex-direction: column; gap: 6px; }
+    .section-head p { margin: 0; max-width: 48ch; font-size: 15px; color: var(--ink-2); }
+    h2 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-stretch: 112%;
+      font-size: clamp(28px, 4vw, 40px);
       line-height: 1.05;
-      margin: 1.5rem 0 0.5rem;
-      letter-spacing: -0.02em;
-    }
-
-    h1 .grad {
-      background: linear-gradient(90deg, var(--accent), var(--accent-2));
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .headline {
-      font-size: clamp(1.05rem, 2.5vw, 1.3rem);
-      font-weight: 600;
-      color: var(--text);
-      margin: 0 0 0.4rem;
-    }
-
-    .meta {
-      color: var(--muted);
-      font-size: 0.95rem;
-      margin: 0 0 1.5rem;
-    }
-
-    .lede {
-      font-size: clamp(1.05rem, 2.5vw, 1.2rem);
-      color: var(--muted);
-      max-width: 60ch;
-      margin: 0 0 2rem;
-      line-height: 1.65;
-    }
-
-    .cta-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-      margin-bottom: 3.5rem;
+      letter-spacing: -0.01em;
+      text-transform: uppercase;
     }
 
     .btn {
-      appearance: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      border: 1px solid var(--border);
-      background: var(--card);
-      color: var(--text);
-      font-size: 0.95rem;
-      font-weight: 600;
-      text-decoration: none;
-      padding: 0.8rem 1.3rem;
-      border-radius: 12px;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      min-height: 48px; padding: 0 22px;
+      border: 2px solid var(--ink);
+      background: transparent; color: var(--ink);
+      font-family: var(--font-body); font-weight: 700; font-size: 15px;
+      letter-spacing: 0.02em; text-transform: uppercase; text-decoration: none;
       cursor: pointer;
-      transition: transform 0.12s ease, border-color 0.12s ease;
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
     }
-    .btn:hover { transform: translateY(-1px); border-color: var(--accent); }
+    .btn:hover { transform: translate(-2px, -2px); box-shadow: 2px 2px 0 var(--ink); }
+    .btn.primary { background: var(--accent); color: #141815; }
 
-    .btn.primary {
-      background: linear-gradient(90deg, var(--accent), #8b7bff);
-      border: none;
-      color: white;
-      box-shadow: 0 8px 24px rgba(108, 92, 231, 0.35);
+    /* ---------- Top bar ---------- */
+    .topbar { padding-block: 18px; display: flex; flex-wrap: wrap; gap: 12px 24px; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 13px; }
+    .topbar nav { display: flex; flex-wrap: wrap; gap: 20px; }
+    .topbar nav a { color: var(--ink); text-decoration: none; }
+    .topbar nav a:hover { color: var(--accent-ink); }
+
+    /* ---------- Hero title block ---------- */
+    .titleblock { border: 2px solid var(--ink); display: flex; flex-wrap: wrap; background: var(--paper); }
+    .tb-main { flex: 999 1 540px; min-width: 0; padding: clamp(24px, 4vw, 44px); display: flex; flex-direction: column; gap: 20px; border-right: 2px solid var(--ink); }
+    .tb-main h1 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-weight: 800; font-stretch: 125%;
+      font-size: clamp(44px, 7.5vw, 84px);
+      line-height: 0.95; letter-spacing: -0.02em; text-transform: uppercase;
     }
+    .tb-main .lede { margin: 0; font-size: 19px; line-height: 1.55; max-width: 54ch; color: var(--ink-2); }
+    .tb-main .cta { display: flex; flex-wrap: wrap; gap: 12px; }
+    .tb-side { flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column; }
+    .tb-side img { display: block; width: 100%; max-width: 100%; height: 280px; object-fit: cover; object-position: center 25%; border-bottom: 2px solid var(--ink); }
+    .tb-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); font-family: var(--font-mono); font-size: 12px; flex: 1; }
+    .tb-grid > div { padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; border-bottom: 1px solid var(--ink); }
+    .tb-grid > div:nth-child(odd) { border-right: 1px solid var(--ink); }
+    .tb-grid > div:nth-last-child(-n+2) { border-bottom: none; }
+    .tb-grid span:first-child { color: var(--muted); }
+    .tb-grid span:last-child { font-size: 14px; }
+    .status-on { color: var(--accent-ink); }
+    @media (max-width: 860px) { .tb-main { border-right: none; border-bottom: 2px solid var(--ink); } }
 
-    section.block { margin-bottom: 3.5rem; }
+    /* ---------- Ask the twin ---------- */
+    .ask-grid { display: flex; flex-wrap: wrap; gap: 32px; align-items: flex-start; }
+    .chat { flex: 999 1 560px; min-width: 0; border: 2px solid var(--ink); background: var(--card); display: flex; flex-direction: column; }
+    .chat-head { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-bottom: 2px solid var(--ink); }
+    .chat-head img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+    .chat-head .who { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+    .chat-head .who strong { font-size: 15px; }
+    .chat-head .who span { font-size: 12px; color: var(--muted); }
+    .pill { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 12px; padding: 4px 10px; border: 1px solid var(--line-soft); white-space: nowrap; }
+    .pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+    .pill[data-state="online"] .dot { background: var(--c-eng); }
+    .pill[data-state="offline"] .dot { background: var(--accent); }
 
-    h2 {
-      font-size: 1.4rem;
-      letter-spacing: -0.01em;
-      margin: 0 0 1.25rem;
+    .messages { padding: 22px 18px; display: flex; flex-direction: column; gap: 14px; min-height: 300px; max-height: 460px; overflow-y: auto; }
+    .msg { max-width: 88%; padding: 12px 16px; font-size: 15px; line-height: 1.6; white-space: pre-line; overflow-wrap: anywhere; }
+    .msg.user { align-self: flex-end; background: var(--ink); color: var(--paper); }
+    .msg.bot { align-self: flex-start; background: var(--paper-2); border: 1px solid var(--line-soft); color: var(--ink); }
+    .msg.note { align-self: center; max-width: 100%; padding: 4px 0; font-family: var(--font-mono); font-size: 12px; color: var(--muted); background: none; }
+    .msg-sources { align-self: flex-start; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: -6px; }
+    .msg-sources .label { font-family: var(--font-mono); font-size: 11px; color: var(--muted); letter-spacing: 0.04em; }
+    .src-chip { font-family: var(--font-mono); font-size: 11px; color: var(--accent-ink); background: var(--accent-tint); border: 1px solid var(--accent); padding: 3px 8px; text-decoration: none; }
+    .typing { align-self: flex-start; font-family: var(--font-mono); font-size: 13px; color: var(--muted); }
+
+    .prompts { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 18px 16px; }
+    .prompt {
+      min-height: 36px; padding: 0 14px;
+      border: 1px solid var(--ink); background: var(--paper-2); color: var(--ink);
+      font-family: var(--font-body); font-size: 13px; cursor: pointer;
     }
-
-    .about p {
-      color: var(--muted);
-      font-size: 1.05rem;
-      line-height: 1.7;
-      max-width: 65ch;
-      margin: 0 0 1rem;
+    .prompt:hover { background: var(--accent-tint); }
+    .composer { display: flex; gap: 8px; padding: 14px 18px; border-top: 2px solid var(--ink); }
+    .composer input {
+      flex: 1; min-width: 0; min-height: 48px; padding: 0 14px;
+      border: 1px solid var(--line-soft); background: var(--paper-2); color: var(--ink);
+      font: inherit; font-size: 15px;
     }
+    .composer button { min-width: 48px; min-height: 48px; border: 2px solid var(--ink); background: var(--accent); color: #141815; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-    /* Timeline */
-    .timeline { display: grid; gap: 1rem; }
+    .ask-side { flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
+    .ask-side ol { margin: 0; padding: 0; list-style: none; border-top: 2px solid var(--ink); }
+    .ask-side li { display: flex; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--line-soft); font-size: 14px; color: var(--ink-2); }
+    .ask-side li .n { font-family: var(--font-mono); font-size: 12px; color: var(--accent-ink); flex-shrink: 0; padding-top: 2px; }
 
-    .item {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 1.25rem 1.35rem;
+    /* ---------- Embedding map ---------- */
+    .map-grid { display: flex; flex-wrap: wrap; gap: 24px; }
+    .map-fig { flex: 999 1 620px; min-width: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+    .map {
+      position: relative; height: 520px;
+      background-color: var(--card);
+      background-image: linear-gradient(var(--line-soft) 1px, transparent 1px), linear-gradient(90deg, var(--line-soft) 1px, transparent 1px);
+      background-size: 48px 48px;
+      border: 2px solid var(--ink);
+      overflow: hidden;
     }
-    .item .row {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      gap: 0.25rem 1rem;
-      align-items: baseline;
-    }
-    .item h3 { margin: 0; font-size: 1.05rem; }
-    .item .org { color: var(--accent-2); font-weight: 600; }
-    .item .when { color: var(--muted); font-size: 0.85rem; white-space: nowrap; }
-    .item .where { color: var(--muted); font-size: 0.85rem; margin: 0.15rem 0 0; }
-    .item p.desc { color: var(--muted); font-size: 0.92rem; line-height: 1.55; margin: 0.6rem 0 0; }
+    .axis { position: absolute; font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+    .pt { position: absolute; display: flex; align-items: center; gap: 6px; transform: translateY(-50%); transition: opacity 0.25s ease; }
+    .pt .dot { flex-shrink: 0; width: 10px; height: 10px; border-radius: 50%; }
+    .pt.role .dot { width: 14px; height: 14px; border-radius: 2px; }
+    .pt .lbl { font-size: 12px; font-weight: 500; white-space: nowrap; color: var(--ink); background: color-mix(in srgb, var(--card) 85%, transparent); padding: 1px 4px; }
+    .pt.role .lbl { font-size: 13px; font-weight: 700; }
+    .pt.flip { flex-direction: row-reverse; }
+    .pt.dim { opacity: 0.25; }
+    figcaption { font-family: var(--font-mono); font-size: 12px; line-height: 1.6; color: var(--muted); }
+    @media (max-width: 640px) { .map { height: 440px; } .pt:not(.role) .lbl { display: none; } }
 
-    /* Skills */
-    .skill-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
-    .skill-group {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 1.1rem 1.25rem;
+    .map-side { flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
+    .clusters { display: flex; flex-direction: column; gap: 8px; }
+    .cluster-btn {
+      display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 14px;
+      border: 2px solid var(--line-soft); background: var(--card); color: var(--ink);
+      font-family: var(--font-body); font-size: 15px; font-weight: 700; text-align: left; cursor: pointer;
     }
-    .skill-group h3 { margin: 0 0 0.75rem; font-size: 0.95rem; }
-    .chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-    .chip {
-      font-size: 0.8rem;
-      color: var(--text);
-      background: var(--bg-soft);
-      border: 1px solid var(--border);
-      padding: 0.3rem 0.65rem;
-      border-radius: 999px;
-    }
+    .cluster-btn[aria-pressed="true"] { border-color: var(--ink); background: var(--paper-2); }
+    .cluster-btn .sw { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+    .cluster-btn .name { flex: 1; }
+    .cluster-btn .count { font-family: var(--font-mono); font-size: 12px; font-weight: 400; color: var(--muted); }
+    .cluster-detail { border: 2px solid var(--ink); background: var(--card); padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+    .cluster-detail h3 { margin: 0; font-size: 20px; }
+    .cluster-detail p { margin: 0; font-size: 15px; color: var(--ink-2); }
+    .cluster-detail a { display: flex; justify-content: space-between; gap: 12px; padding-top: 8px; border-top: 1px solid var(--line-soft); font-size: 14px; font-weight: 700; color: var(--ink); text-decoration: none; }
+    .cluster-detail a:hover { color: var(--accent-ink); }
+    .cluster-detail a span { font-family: var(--font-mono); font-size: 12px; font-weight: 400; color: var(--muted); white-space: nowrap; }
 
-    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-    @media (max-width: 640px) { .two-col { grid-template-columns: 1fr; } }
-
-    footer {
-      position: relative;
-      z-index: 1;
-      text-align: center;
-      color: var(--muted);
-      font-size: 0.85rem;
-      padding: 2rem 1rem 3rem;
+    /* ---------- Run log ---------- */
+    .band { background: var(--band); color: var(--band-text); }
+    .band h2 { color: #FFFFFF; }
+    .band .eyebrow { color: var(--band-accent); }
+    .band .section-head p { color: var(--band-muted); }
+    .runlog { list-style: none; margin: 0; padding: 0; }
+    .step {
+      display: flex; flex-wrap: wrap; gap: 8px 32px;
+      padding: 26px 16px; margin-inline: -16px;
+      border-top: 1px solid var(--band-line);
+      transition: background 0.3s ease;
+      scroll-margin-top: 24px;
     }
-    footer a { color: var(--accent-2); text-decoration: none; }
+    .step:last-child { border-bottom: 1px solid var(--band-line); }
+    .step .when { flex: 0 0 140px; font-family: var(--font-mono); font-size: 13px; color: var(--band-muted); font-variant-numeric: tabular-nums; display: flex; flex-direction: column; gap: 2px; }
+    .step .when b { color: var(--band-accent); font-family: var(--font-display); font-stretch: 125%; font-weight: 800; font-size: 22px; }
+    .step .body { flex: 1 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+    .step code { font-family: var(--font-mono); font-size: 13px; color: var(--band-accent); overflow-wrap: anywhere; }
+    .step h3 { margin: 0; font-size: 20px; font-weight: 700; color: #FFFFFF; }
+    .step h3 span { color: var(--band-muted); font-weight: 500; }
+    .step p { margin: 0; font-size: 15px; color: var(--band-muted); max-width: 70ch; }
+    .step.cited { background: rgba(245, 139, 78, 0.12); box-shadow: inset 3px 0 0 var(--band-accent); }
+
+    /* ---------- Education / extras ---------- */
+    .cells { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); border-top: 2px solid var(--ink); border-left: 2px solid var(--ink); }
+    .cell { display: flex; flex-direction: column; gap: 6px; padding: 18px; border-right: 2px solid var(--ink); border-bottom: 2px solid var(--ink); background: var(--paper-2); transition: background 0.3s ease; scroll-margin-top: 24px; }
+    .cell .k { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+    .cell strong { font-size: 17px; }
+    .cell span:last-child { font-size: 14px; color: var(--ink-2); }
+    .cell.cited { background: var(--accent-tint); }
+    .cell.wide { grid-column: 1 / -1; gap: 10px; padding: 24px; background: var(--card); }
+    .cell.wide strong { font-family: var(--font-display); font-stretch: 112%; font-weight: 800; font-size: 24px; text-transform: uppercase; }
+    .cell.wide p { margin: 0; max-width: 70ch; font-size: 15px; color: var(--ink-2); }
+    .cell.wide code { font-family: var(--font-mono); font-size: 13px; color: var(--accent-ink); overflow-wrap: anywhere; }
+    .cell.wide.cited { background: var(--accent-tint); }
+
+    /* ---------- Contact ---------- */
+    .rfp { border: 2px solid var(--ink); background: var(--accent); color: #141815; padding: clamp(24px, 4vw, 40px); display: flex; flex-wrap: wrap; gap: 24px; justify-content: space-between; align-items: flex-end; }
+    .rfp > div { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+    .rfp h2 { font-stretch: 125%; font-size: clamp(32px, 5vw, 48px); line-height: 1; }
+    .rfp .email { font-family: var(--font-mono); font-size: 17px; overflow-wrap: anywhere; color: #141815; }
+    .rfp .btn { border-color: #141815; background: #141815; color: #EDF0EC; }
+    .rfp .btn:hover { box-shadow: 2px 2px 0 #EDF0EC; }
+    footer { padding-block: 28px 48px; font-family: var(--font-mono); font-size: 12px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; }
   </style>
 </head>
 <body>
-  <div class="bg-glow"></div>
 
-  <main class="wrap">
-    <span class="badge"><span class="dot"></span> Available to connect</span>
+  <!-- ================= Top bar ================= -->
+  <div class="wrap topbar">
+    <span>haytham.borchani / <span style="color:var(--muted)">applied-ai</span></span>
+    <nav aria-label="Sections">
+      <a href="#ask">Ask the twin</a>
+      <a href="#map">Skill map</a>
+      <a href="#log">Run log</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </div>
 
-    <h1>Hi, I'm <span class="grad">Haytham Borchani</span></h1>
-    <p class="headline">Applied AI Engineer @ BNP Paribas · ENSTA Paris</p>
-    <p class="meta">📍 Paris, Île-de-France, France</p>
-
-    <p class="lede">
-      I build applied AI systems — with a focus on natural language processing,
-      large language models, retrieval-augmented generation (RAG) and autonomous
-      agents. I turn research ideas into products that work in production.
-    </p>
-
-    <div class="cta-row">
-      <button class="btn primary" onclick="openChat()">💬 Chat with Haytham's Agent</button>
-      <a class="btn" href="mailto:borchani.haytham@gmail.com">✉️ Email</a>
-      <a class="btn" href="https://www.linkedin.com/in/haytham-borchani-0995521ba/" target="_blank" rel="noopener">in LinkedIn</a>
+  <!-- ================= Hero: title block (D) ================= -->
+  <header class="wrap">
+    <div class="titleblock">
+      <div class="tb-main">
+        <span class="eyebrow" style="color:var(--muted)">Spec · Applied AI Engineer</span>
+        <h1>Haytham<br>Borchani</h1>
+        <p class="lede">I build applied AI systems: conversational RAG, LLM agents and multi-agent orchestration, taken from research idea to production. Currently in the Global AI Office at BNP Paribas Cardif.</p>
+        <div class="cta">
+          <a class="btn primary" href="#ask">Talk to my twin</a>
+          <a class="btn" href="https://www.linkedin.com/in/haytham-borchani-0995521ba/" target="_blank" rel="noopener">LinkedIn</a>
+        </div>
+      </div>
+      <div class="tb-side">
+        <img src="professional_photo.jpg" alt="Portrait of Haytham Borchani" />
+        <div class="tb-grid">
+          <div><span>ROLE</span><span>Applied AI Engineer</span></div>
+          <div><span>LOCATION</span><span>Paris, FR</span></div>
+          <div><span>SCHOOL</span><span>ENSTA Paris · IP Paris</span></div>
+          <div><span>FOCUS</span><span>RAG · Agents · LLM eval</span></div>
+        </div>
+      </div>
     </div>
+  </header>
 
-    <!-- About -->
-    <section class="block about">
-      <h2>About me</h2>
-      <p>
-        I'm an Applied AI Engineer at BNP Paribas Cardif, working within the NLP
-        team of Corporate Analytics on conversational RAG systems and agentic
-        approaches. I studied Applied Mathematics, Optimization and Data Science
-        at ENSTA Paris and earned an M2 in Data Science at Institut Polytechnique
-        de Paris.
-      </p>
-      <p>
-        Over the past few years I've worked across research and industry — from a
-        machine-learning research group to consulting and financial services —
-        building and deploying models for real-world problems. I enjoy the whole
-        path: framing the problem, experimenting with the latest methods, and
-        shipping something reliable.
-      </p>
-    </section>
-
-    <!-- Experience -->
-    <section class="block">
-      <h2>Experience</h2>
-      <div class="timeline">
-        <div class="item">
-          <div class="row">
-            <h3>Applied AI Engineer</h3>
-            <span class="when">Feb 2025 — Present</span>
-          </div>
-          <span class="org">BNP Paribas Cardif</span>
-          <p class="where">Nanterre, France · Hybrid · NLP — Corporate Analytics</p>
-          <p class="desc">Building conversational RAG systems and agent-based solutions — retrieval-augmented generation, multi-agent systems and LLM applications.</p>
-        </div>
-
-        <div class="item">
-          <div class="row">
-            <h3>Data Scientist — End-of-studies Internship</h3>
-            <span class="when">Apr 2024 — Oct 2024</span>
-          </div>
-          <span class="org">BNP Paribas Cardif</span>
-          <p class="where">Nanterre, France · NLP — Corporate Analytics</p>
-          <p class="desc">Research and development around large language models within the Corporate Analytics DataLab.</p>
-        </div>
-
-        <div class="item">
-          <div class="row">
-            <h3>Data Scientist — Gap-Year Internship</h3>
-            <span class="when">Mar 2023 — Aug 2023</span>
-          </div>
-          <span class="org">BNP Paribas</span>
-          <p class="where">Paris, France · Compliance Group — Technology &amp; Innovation</p>
-          <p class="desc">Research and development on Graph Neural Networks for compliance use cases.</p>
-        </div>
-
-        <div class="item">
-          <div class="row">
-            <h3>Consultant Data Scientist — Gap-Year Internship</h3>
-            <span class="when">Sep 2022 — Feb 2023</span>
-          </div>
-          <span class="org">Wavestone</span>
-          <p class="where">Paris, France · Digital Customer Practice — ML &amp; DataLab</p>
-          <p class="desc">Machine-learning consulting and model deployment for the MLDL asset.</p>
-        </div>
-
-        <div class="item">
-          <div class="row">
-            <h3>Research Intern</h3>
-            <span class="when">Jun 2022 — Aug 2022</span>
-          </div>
-          <span class="org">Centre Borelli</span>
-          <p class="where">Paris, France · Machine Learning &amp; Massive Data Analysis (MLMDA)</p>
-          <p class="desc">Research on machine-learning methods within the MLMDA research group.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Skills -->
-    <section class="block">
-      <h2>Skills</h2>
-      <div class="skill-groups">
-        <div class="skill-group">
-          <h3>AI &amp; Machine Learning</h3>
-          <div class="chips">
-            <span class="chip">LLMs</span>
-            <span class="chip">RAG</span>
-            <span class="chip">Agents &amp; multi-agent systems</span>
-            <span class="chip">NLP</span>
-            <span class="chip">Deep Learning</span>
-            <span class="chip">Graph Neural Networks</span>
-            <span class="chip">Machine Learning</span>
-          </div>
-        </div>
-        <div class="skill-group">
-          <h3>Engineering &amp; Tools</h3>
-          <div class="chips">
-            <span class="chip">Python</span>
-            <span class="chip">PyTorch</span>
-            <span class="chip">LangChain</span>
-            <span class="chip">Model Deployment</span>
-            <span class="chip">R&amp;D</span>
-          </div>
-        </div>
-        <div class="skill-group">
-          <h3>Foundations</h3>
-          <div class="chips">
-            <span class="chip">Applied Mathematics</span>
-            <span class="chip">Optimization</span>
-            <span class="chip">Statistics &amp; Probability</span>
-            <span class="chip">Data Science</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Education & Languages -->
-    <section class="block">
-      <div class="two-col">
+  <main>
+    <!-- ================= Ask the twin (A) ================= -->
+    <section id="ask" class="section wrap">
+      <div class="section-head">
         <div>
-          <h2>Education</h2>
-          <div class="timeline">
-            <div class="item">
-              <div class="row">
-                <h3>Engineer's Degree</h3>
-                <span class="when">2020 — 2024</span>
-              </div>
-              <span class="org">ENSTA Paris</span>
-              <p class="where">Applied Mathematics, Optimization &amp; Data Science</p>
-            </div>
-            <div class="item">
-              <div class="row">
-                <h3>Master's Degree (M2)</h3>
-                <span class="when">2023 — 2024</span>
-              </div>
-              <span class="org">Institut Polytechnique de Paris</span>
-              <p class="where">Data Science</p>
-            </div>
-          </div>
+          <span class="eyebrow">Fig. 1 · Live demo</span>
+          <h2>Don't read my CV. Ask it.</h2>
         </div>
+        <p>This is my digital twin, an assistant trained on my background. After each answer it links to the parts of this page that back it up.</p>
+      </div>
+
+      <div class="ask-grid">
+        <div class="chat">
+          <div class="chat-head">
+            <img src="professional_photo.jpg" alt="" />
+            <div class="who">
+              <strong>Haytham's twin</strong>
+              <span>Answers about my work · may be imperfect</span>
+            </div>
+            <span class="pill" id="twin-status" data-state="connecting"><span class="dot"></span><span id="twin-status-text">connecting</span></span>
+          </div>
+          <div class="messages" id="messages" aria-live="polite">
+            <div class="msg bot">Hi! I'm Haytham's digital twin. Ask me about his work on RAG and agents, his experience, or his studies.</div>
+          </div>
+          <div class="prompts" id="prompts"></div>
+          <form class="composer" id="composer" autocomplete="off">
+            <label class="sr-only" for="ask-input">Ask the twin a question</label>
+            <input id="ask-input" type="text" placeholder="Ask about my RAG work, agents, studies…" />
+            <button type="submit" aria-label="Send">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </button>
+          </form>
+        </div>
+
+        <aside class="ask-side" aria-label="How it works">
+          <span class="eyebrow" style="color:var(--muted)">How it answers</span>
+          <ol>
+            <li><span class="n">01</span><span>Your question goes to a Rasa assistant running on Google Cloud Run.</span></li>
+            <li><span class="n">02</span><span>The assistant answers using what it knows about my background.</span></li>
+            <li><span class="n">03</span><span>The page then links the answer to the run-log entries and studies it mentions.</span></li>
+          </ol>
+          <span class="mono" style="font-size:12px;color:var(--muted)">If the twin is offline, the suggested questions still get a saved answer.</span>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ================= Embedding map (C) ================= -->
+    <section id="map" class="section wrap" style="padding-top:0">
+      <div class="section-head">
         <div>
-          <h2>Languages</h2>
-          <div class="skill-group">
-            <div class="chips">
-              <span class="chip">Arabic — Native</span>
-              <span class="chip">French — Full professional</span>
-              <span class="chip">English — Professional</span>
-              <span class="chip">German — Elementary</span>
-            </div>
+          <span class="eyebrow">Fig. 2 · Skill map</span>
+          <h2>Everything I know, in one embedding space</h2>
+        </div>
+        <p>My skills and roles, grouped the way I'd look at any dataset: as clusters. Pick one to explore.</p>
+      </div>
+      <div class="map-grid">
+        <figure class="map-fig">
+          <div class="map" id="map-canvas" role="img" aria-label="Map of skills and roles grouped into four clusters: LLMs, RAG and agents; Graph ML; Engineering and deployment; Mathematical foundations.">
+            <span class="axis" style="left:12px;bottom:10px">UMAP-1 →</span>
+            <span class="axis" style="left:12px;top:10px">↑ UMAP-2</span>
           </div>
-          <h2 style="margin-top:2rem;">Highlights</h2>
-          <div class="skill-group">
-            <div class="chips">
-              <span class="chip">Agentic AI — DeepLearning.AI</span>
-              <span class="chip">Excellence Scholarship</span>
-              <span class="chip">18+ certifications</span>
-            </div>
-          </div>
+          <figcaption>Skills (dots) and roles (squares), placed by how often they appear together in my work. The layout is illustrative and placed by hand.</figcaption>
+        </figure>
+        <div class="map-side">
+          <span class="eyebrow" style="color:var(--muted)">Clusters</span>
+          <div class="clusters" id="clusters"></div>
+          <div class="cluster-detail" id="cluster-detail" aria-live="polite"></div>
         </div>
       </div>
     </section>
 
-    <section class="block about">
-      <h2>Let's talk</h2>
-      <p>
-        Want to know more about my background, skills or projects? Use the chat
-        bubble in the bottom-right corner, or reach me directly by
-        <a href="mailto:borchani.haytham@gmail.com" style="color:var(--accent-2);text-decoration:none;">email</a>.
-      </p>
+    <!-- ================= Run log (B) ================= -->
+    <section id="log" class="band">
+      <div class="section wrap">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Run log</span>
+            <h2>Experience</h2>
+          </div>
+          <p class="mono" style="font-size:13px">5 steps · 2022 → now · most recent first</p>
+        </div>
+        <ol class="runlog">
+          <li class="step" id="step-5">
+            <div class="when"><b>05</b>Feb 2025 → now</div>
+            <div class="body">
+              <code>bnpp.cardif.global_ai_office.build(systems=["conversational_rag", "multi_agent"])</code>
+              <h3>Applied AI Engineer <span>@ BNP Paribas Cardif</span></h3>
+              <p>Building conversational RAG systems and agent-based solutions: retrieval-augmented generation, multi-agent systems and LLM applications. Global AI Office. Nanterre, hybrid.</p>
+            </div>
+          </li>
+          <li class="step" id="step-4">
+            <div class="when"><b>04</b>Apr → Oct 2024</div>
+            <div class="body">
+              <code>bnpp.cardif.global_ai_office.research(topics=["llm", "evaluation", "finetuning"])</code>
+              <h3>Data Scientist, end-of-studies internship <span>@ BNP Paribas Cardif</span></h3>
+              <p>Research and development on large language models, their evaluation and fine-tuning, within the Global AI Office.</p>
+            </div>
+          </li>
+          <li class="step" id="step-3">
+            <div class="when"><b>03</b>Mar → Aug 2023</div>
+            <div class="body">
+              <code>bnpp.compliance.research(model="gnn")</code>
+              <h3>Data Scientist, gap-year internship <span>@ BNP Paribas</span></h3>
+              <p>Research and development on Graph Neural Networks for compliance use cases. Compliance Group, Technology &amp; Innovation.</p>
+            </div>
+          </li>
+          <li class="step" id="step-2">
+            <div class="when"><b>02</b>Sep 2022 → Feb 2023</div>
+            <div class="body">
+              <code>wavestone.mldl.document_ai.extract(source="cvs", models=["layoutlmv3", "lilt"])</code>
+              <h3>Consultant Data Scientist, gap-year internship <span>@ Wavestone</span></h3>
+              <p>Document AI project: information extraction from CVs with multimodal, multilingual transformers. Fine-tuned LayoutLMv3 and LiLT on a custom CV dataset from Hugging Face pre-trained models, and built a Streamlit web app that automates structured extraction. Digital Customer Practice, ML &amp; DataLab.</p>
+            </div>
+          </li>
+          <li class="step" id="step-1">
+            <div class="when"><b>01</b>Jun → Aug 2022</div>
+            <div class="body">
+              <code>borelli.mlmda.research()</code>
+              <h3>Research Intern <span>@ Centre Borelli</span></h3>
+              <p>Research on machine-learning methods within the Machine Learning &amp; Massive Data Analysis group.</p>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ================= Education & more ================= -->
+    <section id="education" class="section wrap">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">Training data</span>
+          <h2>Education &amp; more</h2>
+        </div>
+      </div>
+      <div class="cells">
+        <div class="cell" id="edu-ensta"><span class="k">2020 — 2024</span><strong>ENSTA Paris</strong><span>Engineer's Degree · Applied Mathematics, Optimization &amp; Data Science</span></div>
+        <div class="cell" id="edu-ipp"><span class="k">2023 — 2024</span><strong>Institut Polytechnique de Paris</strong><span>Master's Degree (M2) · Data Science</span></div>
+        <div class="cell" id="extra-lang"><span class="k">Languages</span><strong>ar · fr · en · de</strong><span>Native · full professional · professional · elementary</span></div>
+        <div class="cell wide" id="extra-certs">
+          <span class="k">Continuous learning · self-directed</span>
+          <strong>My training didn't stop at graduation.</strong>
+          <p>AI changes every few months, so I keep studying on my own time. I've earned 18+ certifications so far, most recently Agentic AI from DeepLearning.AI.</p>
+          <code>training.resume(epoch="18+ certifications", latest="agentic_ai@deeplearning.ai", stop=None)</code>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= Contact (D) ================= -->
+    <section id="contact" class="wrap">
+      <div class="rfp">
+        <div>
+          <span class="mono" style="font-size:12px;letter-spacing:0.08em">REQUEST FOR PROPOSAL</span>
+          <h2>Have a system to build?</h2>
+          <a class="email" href="mailto:borchani.haytham@gmail.com">borchani.haytham@gmail.com</a>
+        </div>
+        <a class="btn" href="https://www.linkedin.com/in/haytham-borchani-0995521ba/" target="_blank" rel="noopener">LinkedIn</a>
+      </div>
     </section>
   </main>
 
-  <footer>
-    © <span id="year"></span> Haytham Borchani ·
-    <a href="mailto:borchani.haytham@gmail.com">borchani.haytham@gmail.com</a> ·
-    <a href="https://www.linkedin.com/in/haytham-borchani-0995521ba/" target="_blank" rel="noopener">LinkedIn</a>
+  <footer class="wrap">
+    <span>© <span id="year"></span> Haytham Borchani</span>
+    <span>Static page on GitHub Pages · twin on Cloud Run</span>
   </footer>
-
-  <!-- ==== Official Rasa Chat Widget (Socket.IO channel) ==== -->
-  <rasa-chatbot-widget
-    widget-title="Chat with Haytham's Agent"
-    input-message-placeholder="Type a message…"
-    initial-payload="/greet"
-    bot-icon="avatar_me_square_zoom.jpg"
-    widget-icon="avatar_me_square_zoom.jpg"
-    toggle-full-screen
-  ></rasa-chatbot-widget>
 
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
 
+    /* ============ Fig. 2: embedding map ============ */
     (function () {
-      // Point the widget at the backend defined in CHAT_SERVER_URL
-      // (kept as a single source of truth so it's easy to switch to localhost).
-      var widget = document.querySelector("rasa-chatbot-widget");
-      if (widget) widget.setAttribute("server-url", window.CHAT_SERVER_URL);
-
-      // Page buttons: open the chat. The official widget exposes no public
-      // open() method, so we click its launcher (a <div role="button"> with the
-      // class below) inside the shadow DOM.
-      window.openChat = function () {
-        if (!widget || !widget.shadowRoot) return;
-        var launcher = widget.shadowRoot.querySelector(
-          ".rasa-chatbot-widget__launcher"
-        );
-        if (launcher) launcher.click();
+      var C = {
+        llm:   { name: "LLMs, RAG & agents", color: "var(--c-llm)",
+                 blurb: "Where I spend most of my time now: conversational RAG, multi-agent systems and LLM applications at BNP Paribas Cardif.",
+                 roles: [["Applied AI Engineer · Cardif", "2025 — now", "#step-5"], ["Data Scientist · Cardif Global AI Office", "2024", "#step-4"]] },
+        graph: { name: "Graph ML", color: "var(--c-graph)",
+                 blurb: "Graph Neural Networks applied to compliance use cases, in the Technology & Innovation team of BNP Paribas Compliance.",
+                 roles: [["Data Scientist · BNP Paribas", "2023", "#step-3"]] },
+        eng:   { name: "Engineering & deployment", color: "var(--c-eng)",
+                 blurb: "Turning models into tools people use: a Streamlit app for CV information extraction at Wavestone, MLOps, and the production side of every project since.",
+                 roles: [["Consultant Data Scientist · Wavestone", "2022 — 23", "#step-2"]] },
+        found: { name: "Mathematical foundations", color: "var(--c-found)",
+                 blurb: "Applied mathematics, optimization and statistics from ENSTA Paris and IP Paris, plus research at Centre Borelli.",
+                 roles: [["Research Intern · Centre Borelli", "2022", "#step-1"], ["ENSTA Paris · IP Paris M2", "2020 — 24", "#education"]] }
       };
+      // [label, cluster, x%, y%, isRole, labelOnLeft]
+      var P = [
+        // LLMs, RAG & agents (upper right)
+        ["LLMs", "llm", 50, 10, false, false],
+        ["RAG", "llm", 66, 10, false, false],
+        ["Embeddings & vector search", "llm", 74, 19, false, false],
+        ["Internship · Cardif", "llm", 47, 20, true, false],
+        ["Applied AI Engineer · Cardif", "llm", 55, 30, true, false],
+        ["NLP", "llm", 46, 38, false, false],
+        ["Multi-agent systems", "llm", 78, 39, false, false],
+        ["LLM evaluation", "llm", 54, 42, false, false],
+        ["Fine-tuning (LoRA/PEFT)", "llm", 47, 50, false, false],
+        ["LangChain", "llm", 70, 50, false, false],
+        ["LangGraph", "llm", 85, 47, false, false],
+        ["Hugging Face Transformers", "llm", 76, 56, false, false],
+        ["Document AI · info extraction", "llm", 72, 74, false, false],
+        ["LayoutLMv3 / LiLT", "llm", 84, 92, false, false],
+        // Graph ML (upper left)
+        ["GNNs", "graph", 20, 10, false, false],
+        ["PyTorch Geometric", "graph", 4, 18, false, false],
+        ["Graph data", "graph", 28, 22, false, false],
+        ["Compliance · BNP Paribas", "graph", 5, 30, true, false],
+        ["Network analysis", "graph", 24, 38, false, false],
+        ["Anomaly / fraud detection", "graph", 4, 45, false, false],
+        // Engineering & deployment (lower right)
+        ["Python", "eng", 48, 64, false, false],
+        ["MLOps (MLflow, CI/CD)", "eng", 70, 62, false, false],
+        ["PyTorch", "eng", 60, 71, false, false],
+        ["Model deployment", "eng", 50, 80, false, false],
+        ["Wavestone", "eng", 72, 85, true, false],
+        ["Streamlit", "eng", 60, 90, false, false],
+        // Mathematical foundations (lower left)
+        ["Applied maths", "found", 4, 54, false, false],
+        ["ENSTA Paris", "found", 30, 56, true, false],
+        ["Optimization", "found", 17, 60, false, false],
+        ["Probability", "found", 4, 66, false, false],
+        ["Deep learning theory", "found", 28, 67, false, false],
+        ["Statistics", "found", 17, 72, false, false],
+        ["Time series", "found", 31, 78, false, false],
+        ["Classical ML (scikit-learn)", "found", 4, 80, false, false],
+        ["IP Paris", "found", 4, 90, true, false],
+        ["Centre Borelli", "found", 21, 91, true, false]
+      ];
+      var map = document.getElementById("map-canvas");
+      var list = document.getElementById("clusters");
+      var detail = document.getElementById("cluster-detail");
+      var nodes = P.map(function (p) {
+        var el = document.createElement("div");
+        el.className = "pt" + (p[4] ? " role" : "") + (p[5] ? " flip" : "");
+        el.style.top = p[3] + "%";
+        if (p[5]) { el.style.right = (100 - p[2]) + "%"; } else { el.style.left = p[2] + "%"; }
+        var dot = document.createElement("span"); dot.className = "dot"; dot.style.background = C[p[1]].color;
+        var lbl = document.createElement("span"); lbl.className = "lbl"; lbl.textContent = p[0];
+        el.appendChild(dot); el.appendChild(lbl);
+        el.dataset.cluster = p[1];
+        map.appendChild(el);
+        return el;
+      });
+      var buttons = {};
+      Object.keys(C).forEach(function (k) {
+        var count = P.filter(function (p) { return p[1] === k; }).length;
+        var b = document.createElement("button");
+        b.type = "button"; b.className = "cluster-btn";
+        b.innerHTML = '<span class="sw"></span><span class="name"></span><span class="count"></span>';
+        b.querySelector(".sw").style.background = C[k].color;
+        b.querySelector(".name").textContent = C[k].name;
+        b.querySelector(".count").textContent = count + " pts";
+        b.addEventListener("click", function () { select(k); });
+        list.appendChild(b);
+        buttons[k] = b;
+      });
+      function select(k) {
+        nodes.forEach(function (n) { n.classList.toggle("dim", n.dataset.cluster !== k); });
+        Object.keys(buttons).forEach(function (j) { buttons[j].setAttribute("aria-pressed", String(j === k)); });
+        var c = C[k];
+        detail.innerHTML = "";
+        var h = document.createElement("h3"); h.textContent = c.name;
+        var p = document.createElement("p"); p.textContent = c.blurb;
+        detail.appendChild(h); detail.appendChild(p);
+        c.roles.forEach(function (r) {
+          var a = document.createElement("a"); a.href = r[2];
+          a.textContent = r[0];
+          var s = document.createElement("span"); s.textContent = r[1];
+          a.appendChild(s); detail.appendChild(a);
+        });
+      }
+      select("llm");
+    })();
+
+    /* ============ Fig. 1: ask the twin ============ */
+    (function () {
+      // Page sections the twin's answers can point to, matched by keywords.
+      var SOURCES = [
+        { id: "step-5", label: "Run log · 05 Cardif", keys: ["applied ai engineer", "cardif", "conversational rag", "multi-agent", "agent"] },
+        { id: "step-4", label: "Run log · 04 Cardif internship", keys: ["end-of-studies", "internship at cardif", "evaluation", "fine-tun", "finetun"] },
+        { id: "step-3", label: "Run log · 03 Compliance", keys: ["compliance", "graph neural", "gnn"] },
+        { id: "step-2", label: "Run log · 02 Wavestone", keys: ["wavestone", "consult", "mldl", "document ai", "information extraction", "layoutlm", "lilt", "streamlit"] },
+        { id: "step-1", label: "Run log · 01 Borelli", keys: ["borelli", "mlmda", "research intern"] },
+        { id: "edu-ensta", label: "ENSTA Paris", keys: ["ensta"] },
+        { id: "edu-ipp", label: "IP Paris M2", keys: ["polytechnique", "ip paris", "m2", "master"] },
+        { id: "extra-certs", label: "Continuous learning", keys: ["certification", "deeplearning.ai", "self-taught", "keep learning", "continuous learning"] },
+        { id: "extra-lang", label: "Languages", keys: ["arabic", "french", "english", "german"] }
+      ];
+      // Saved answers used when the live twin can't be reached.
+      var PROMPTS = [
+        { q: "What do you work on at Cardif?",
+          a: "I'm an Applied AI Engineer in the Global AI Office at BNP Paribas Cardif. I build conversational RAG systems and agent-based solutions: retrieval-augmented generation, multi-agent systems and LLM applications." },
+        { q: "What's your background?",
+          a: "I studied Applied Mathematics, Optimization and Data Science at ENSTA Paris, then did an M2 in Data Science at Institut Polytechnique de Paris. Along the way I worked on Graph Neural Networks for compliance at BNP Paribas, ML consulting at Wavestone and research at Centre Borelli." },
+        { q: "Which languages do you speak?",
+          a: "Arabic is my native language. I work in French and English, and I have an elementary level in German." }
+      ];
+
+      var messages = document.getElementById("messages");
+      var form = document.getElementById("composer");
+      var input = document.getElementById("ask-input");
+      var statusEl = document.getElementById("twin-status");
+      var statusText = document.getElementById("twin-status-text");
+      var promptsEl = document.getElementById("prompts");
+      var socket = null, online = false, typingEl = null, typingTimer = null;
+      var sessionId = "web-" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+
+      function setStatus(state) {
+        online = state === "online";
+        statusEl.dataset.state = state;
+        statusText.textContent = state;
+      }
+      function scrollDown() { messages.scrollTop = messages.scrollHeight; }
+      function add(cls, text) {
+        var d = document.createElement("div");
+        d.className = "msg " + cls;
+        d.textContent = text;
+        messages.appendChild(d);
+        scrollDown();
+        return d;
+      }
+      function showTyping(on) {
+        if (on && !typingEl) {
+          typingEl = document.createElement("div");
+          typingEl.className = "typing"; typingEl.textContent = "twin is thinking…";
+          messages.appendChild(typingEl); scrollDown();
+        } else if (!on && typingEl) { typingEl.remove(); typingEl = null; }
+      }
+      function cite(text) {
+        var t = text.toLowerCase();
+        var hits = SOURCES.filter(function (s) {
+          return s.keys.some(function (k) { return t.indexOf(k) !== -1; });
+        });
+        document.querySelectorAll(".cited").forEach(function (el) { el.classList.remove("cited"); });
+        if (!hits.length) return;
+        var row = document.createElement("div");
+        row.className = "msg-sources";
+        var l = document.createElement("span"); l.className = "label"; l.textContent = "SEE ON THIS PAGE";
+        row.appendChild(l);
+        hits.forEach(function (s) {
+          var target = document.getElementById(s.id);
+          if (target) target.classList.add("cited");
+          var a = document.createElement("a");
+          a.className = "src-chip"; a.href = "#" + s.id; a.textContent = s.label;
+          row.appendChild(a);
+        });
+        messages.appendChild(row);
+        scrollDown();
+      }
+      function botSays(text) {
+        showTyping(false);
+        clearTimeout(typingTimer);
+        add("bot", text);
+        cite(text);
+      }
+      function fallback(q) {
+        var match = PROMPTS.filter(function (p) { return p.q === q; })[0];
+        if (match) {
+          add("note", "Live twin offline · saved answer");
+          botSays(match.a);
+        } else {
+          showTyping(false);
+          add("bot", "The live twin is offline right now. Try one of the suggested questions, or email me at borchani.haytham@gmail.com.");
+        }
+      }
+      function ask(q) {
+        q = q.trim();
+        if (!q) return;
+        add("user", q);
+        if (online && socket) {
+          showTyping(true);
+          socket.emit("user_uttered", { message: q, session_id: sessionId });
+          clearTimeout(typingTimer);
+          typingTimer = setTimeout(function () { if (typingEl) { showTyping(false); fallback(q); } }, 20000);
+        } else {
+          fallback(q);
+        }
+      }
+
+      PROMPTS.forEach(function (p) {
+        var b = document.createElement("button");
+        b.type = "button"; b.className = "prompt"; b.textContent = p.q;
+        b.addEventListener("click", function () { ask(p.q); });
+        promptsEl.appendChild(b);
+      });
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        var q = input.value; input.value = "";
+        ask(q);
+      });
+
+      // Connect to the Rasa socketio channel.
+      if (typeof io === "undefined" || !window.CHAT_SERVER_URL) { setStatus("offline"); return; }
+      socket = io(window.CHAT_SERVER_URL, { transports: ["websocket", "polling"], reconnectionAttempts: 3, timeout: 10000 });
+      socket.on("connect", function () {
+        socket.emit("session_request", { session_id: sessionId });
+        setStatus("online");
+      });
+      socket.on("session_confirm", function (id) { if (typeof id === "string" && id) sessionId = id; });
+      socket.on("bot_uttered", function (msg) {
+        if (msg && msg.text) botSays(msg.text);
+      });
+      socket.on("connect_error", function () { setStatus("offline"); });
+      socket.on("disconnect", function () { setStatus("offline"); });
     })();
   </script>
 </body>
